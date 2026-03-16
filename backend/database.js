@@ -1,0 +1,83 @@
+// database.js — JSON file-based database (no native compilation needed)
+const fs   = require('fs');
+const path = require('path');
+
+const DB_PATH = path.join(__dirname, 'worldometer.json');
+
+function initDB() {
+  const data = {
+    categories: [
+      { id: 1, name: 'World Population',        icon: '🌍', color: '#00ff88', sort_order: 1 },
+      { id: 2, name: 'Government & Economics',  icon: '💰', color: '#ffaa00', sort_order: 2 },
+      { id: 3, name: 'Society & Media',         icon: '📱', color: '#00aaff', sort_order: 3 },
+      { id: 4, name: 'Environment',             icon: '🌿', color: '#44ff44', sort_order: 4 },
+      { id: 5, name: 'Food',                    icon: '🌾', color: '#ff8844', sort_order: 5 },
+      { id: 6, name: 'Water',                   icon: '💧', color: '#44aaff', sort_order: 6 },
+      { id: 7, name: 'Energy',                  icon: '⚡', color: '#ffff00', sort_order: 7 },
+      { id: 8, name: 'Health',                  icon: '❤️', color: '#ff4466', sort_order: 8 },
+    ],
+    stats: [
+      { id:1,  category_id:1, key:'world_population',             label:'Current World Population',             base_value:8119000000,    rate_per_second:2.54,      direction:'up',   unit:'',    decimals:0 },
+      { id:2,  category_id:1, key:'births_this_year',             label:'Births this Year',                     base_value:0,             rate_per_second:4.44,      direction:'up',   unit:'',    decimals:0 },
+      { id:3,  category_id:1, key:'births_today',                 label:'Births Today',                         base_value:0,             rate_per_second:4.44,      direction:'up',   unit:'',    decimals:0 },
+      { id:4,  category_id:1, key:'deaths_this_year',             label:'Deaths this Year',                     base_value:0,             rate_per_second:1.90,      direction:'up',   unit:'',    decimals:0 },
+      { id:5,  category_id:1, key:'deaths_today',                 label:'Deaths Today',                         base_value:0,             rate_per_second:1.90,      direction:'up',   unit:'',    decimals:0 },
+      { id:6,  category_id:1, key:'net_population_growth_year',   label:'Net Population Growth This Year',      base_value:0,             rate_per_second:2.54,      direction:'up',   unit:'',    decimals:0 },
+      { id:7,  category_id:1, key:'net_population_growth_today',  label:'Net Population Growth Today',          base_value:0,             rate_per_second:2.54,      direction:'up',   unit:'',    decimals:0 },
+      { id:8,  category_id:2, key:'public_healthcare_expenditure',label:'Public Healthcare Expenditure Today',  base_value:0,             rate_per_second:231481.0,  direction:'up',   unit:'$',   decimals:0 },
+      { id:9,  category_id:2, key:'public_education_expenditure', label:'Public Education Expenditure Today',   base_value:0,             rate_per_second:162037.0,  direction:'up',   unit:'$',   decimals:0 },
+      { id:10, category_id:2, key:'global_military_expenditure',  label:'Global Military Expenditure Today',    base_value:0,             rate_per_second:57870.0,   direction:'up',   unit:'$',   decimals:0 },
+      { id:11, category_id:2, key:'cars_produced',                label:'Cars Produced This Year',              base_value:0,             rate_per_second:2.91,      direction:'up',   unit:'',    decimals:0 },
+      { id:12, category_id:2, key:'bikes_produced',               label:'Bicycles Produced This Year',          base_value:0,             rate_per_second:10.0,      direction:'up',   unit:'',    decimals:0 },
+      { id:13, category_id:2, key:'computers_produced',           label:'Computers Produced This Year',         base_value:0,             rate_per_second:5.71,      direction:'up',   unit:'',    decimals:0 },
+      { id:14, category_id:3, key:'internet_users',               label:'Internet Users in the World',          base_value:5440000000,    rate_per_second:0,         direction:'up',   unit:'',    decimals:0 },
+      { id:15, category_id:3, key:'emails_sent_today',            label:'Emails Sent Today',                    base_value:0,             rate_per_second:2314814,   direction:'up',   unit:'',    decimals:0 },
+      { id:16, category_id:3, key:'blog_posts_today',             label:'Blog Posts Written Today',             base_value:0,             rate_per_second:1.6,       direction:'up',   unit:'',    decimals:0 },
+      { id:17, category_id:3, key:'tweets_sent_today',            label:'Tweets Sent Today',                    base_value:0,             rate_per_second:5787.0,    direction:'up',   unit:'',    decimals:0 },
+      { id:18, category_id:3, key:'google_searches_today',        label:'Google Searches Today',                base_value:0,             rate_per_second:99537.0,   direction:'up',   unit:'',    decimals:0 },
+      { id:19, category_id:3, key:'youtube_videos_today',         label:'YouTube Videos Watched Today',         base_value:0,             rate_per_second:89120.0,   direction:'up',   unit:'',    decimals:0 },
+      { id:20, category_id:4, key:'co2_emissions_today',          label:'CO2 Emissions Today (tons)',           base_value:0,             rate_per_second:1122000,   direction:'up',   unit:'',    decimals:0 },
+      { id:21, category_id:4, key:'forest_loss_today',            label:'Forest Loss Today (ha)',               base_value:0,             rate_per_second:1.1,       direction:'up',   unit:'ha',  decimals:0 },
+      { id:22, category_id:4, key:'toxic_chemicals_today',        label:'Toxic Chemicals Released Today (kg)',  base_value:0,             rate_per_second:22.0,      direction:'up',   unit:'kg',  decimals:0 },
+      { id:23, category_id:5, key:'food_produced_today',          label:'Food Produced Today (tons)',           base_value:0,             rate_per_second:23148.0,   direction:'up',   unit:'t',   decimals:0 },
+      { id:24, category_id:5, key:'undernourished_people',        label:'Undernourished People in World',       base_value:783000000,     rate_per_second:0,         direction:'up',   unit:'',    decimals:0 },
+      { id:25, category_id:5, key:'overweight_people',            label:'Overweight People in World',           base_value:1900000000,    rate_per_second:0,         direction:'up',   unit:'',    decimals:0 },
+      { id:26, category_id:5, key:'obese_people',                 label:'Obese People in World',                base_value:650000000,     rate_per_second:0,         direction:'up',   unit:'',    decimals:0 },
+      { id:27, category_id:6, key:'water_used_today',             label:'Water Used Today (m³)',                base_value:0,             rate_per_second:694444.0,  direction:'up',   unit:'m³',  decimals:0 },
+      { id:28, category_id:6, key:'deaths_from_water',            label:'Deaths Caused by Water (this year)',   base_value:0,             rate_per_second:0.22,      direction:'up',   unit:'',    decimals:0 },
+      { id:29, category_id:6, key:'people_no_safe_water',         label:'People With No Safe Drinking Water',   base_value:785000000,     rate_per_second:0,         direction:'up',   unit:'',    decimals:0 },
+      { id:30, category_id:7, key:'energy_used_today',            label:'Energy Used Today (MWh)',              base_value:0,             rate_per_second:2430555.0, direction:'up',   unit:'MWh', decimals:0 },
+      { id:31, category_id:7, key:'solar_energy_today',           label:'Solar Energy Produced Today (MWh)',    base_value:0,             rate_per_second:138888.0,  direction:'up',   unit:'MWh', decimals:0 },
+      { id:32, category_id:7, key:'oil_pumped_today',             label:'Oil Pumped Today (barrels)',           base_value:0,             rate_per_second:1157.0,    direction:'up',   unit:'bbl', decimals:0 },
+      { id:33, category_id:7, key:'oil_left',                     label:'Oil Left (barrels)',                   base_value:1650000000000, rate_per_second:-0.000032, direction:'down', unit:'bbl', decimals:0 },
+      { id:34, category_id:7, key:'days_oil_left',                label:'Days Until Oil Runs Out',              base_value:13139,         rate_per_second:-0.0000000116, direction:'down', unit:'', decimals:1 },
+      { id:35, category_id:8, key:'communicable_disease_deaths',  label:'Communicable Disease Deaths This Year',base_value:0,             rate_per_second:0.83,      direction:'up',   unit:'',    decimals:0 },
+      { id:36, category_id:8, key:'seasonal_flu_deaths',          label:'Seasonal Flu Deaths This Year',        base_value:0,             rate_per_second:0.05,      direction:'up',   unit:'',    decimals:0 },
+      { id:37, category_id:8, key:'cancer_deaths',                label:'Cancer Deaths This Year',              base_value:0,             rate_per_second:0.30,      direction:'up',   unit:'',    decimals:0 },
+      { id:38, category_id:8, key:'hiv_aids_deaths',              label:'HIV/AIDS Deaths This Year',            base_value:0,             rate_per_second:0.04,      direction:'up',   unit:'',    decimals:0 },
+      { id:39, category_id:8, key:'malaria_deaths',               label:'Malaria Deaths This Year',             base_value:0,             rate_per_second:0.02,      direction:'up',   unit:'',    decimals:0 },
+      { id:40, category_id:8, key:'smoking_deaths',               label:'Smoking Related Deaths This Year',     base_value:0,             rate_per_second:0.24,      direction:'up',   unit:'',    decimals:0 },
+      { id:41, category_id:8, key:'alcohol_deaths',               label:'Alcohol Related Deaths This Year',     base_value:0,             rate_per_second:0.06,      direction:'up',   unit:'',    decimals:0 },
+      { id:42, category_id:8, key:'suicide_deaths',               label:'Suicides This Year',                   base_value:0,             rate_per_second:0.03,      direction:'up',   unit:'',    decimals:0 },
+      { id:43, category_id:8, key:'malnutrition_deaths',          label:'Malnutrition Deaths This Year',        base_value:0,             rate_per_second:0.11,      direction:'up',   unit:'',    decimals:0 },
+      { id:44, category_id:8, key:'doctors_worldwide',            label:'Doctors in the World',                 base_value:10200000,      rate_per_second:0,         direction:'up',   unit:'',    decimals:0 },
+    ]
+  };
+
+  if (!fs.existsSync(DB_PATH)) {
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+    console.log('✅ Database created: worldometer.json');
+  }
+
+  return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+}
+
+function getDB() {
+  return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+}
+
+function saveDB(data) {
+  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+}
+
+module.exports = { initDB, getDB, saveDB };
